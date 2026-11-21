@@ -2,6 +2,11 @@ name: HarmoniaCILinter
 
 on: [push]
 
+env:
+  PHP_VERSION: "8.4"
+  KERNEL_CLASS: ${{secrets.KERNEL_CLASS}}
+  DATABASE_URL: ${{secrets.DATABASE_URL}}
+
 jobs:
   TestAndLinter:
     runs-on: ubuntu-latest
@@ -9,10 +14,10 @@ jobs:
     # uses: shivammathur/setup-php@v2
     - uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.4'
+        php-version: ${{env.PHP_VERSION}}
     - uses: actions/checkout@v7
-   # - name: Copy .env.test.local
-    #  run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+    - name: Copy .env.test.local
+      run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
     - name: Cache Composer packages
       id: composer-cache
       uses: actions/cache@v6
