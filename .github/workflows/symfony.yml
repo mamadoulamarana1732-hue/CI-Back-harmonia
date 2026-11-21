@@ -3,7 +3,7 @@ name: HarmoniaCILinter
 on: [push]
 
 env:
-  PHP_VERSION: "8.4"
+  PHP_VERSION: "8.5"
   APP_ENV: test
   KERNEL_CLASS: App\Kernel
   DATABASE_URL: "sqlite:///%kernel.project_dir%/data/database.sqlite"
