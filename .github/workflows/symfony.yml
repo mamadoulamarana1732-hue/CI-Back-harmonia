@@ -31,6 +31,14 @@ jobs:
 
       - name: Install Dependencies
         run: composer install --no-progress --prefer-dist
+      - name: php-cs-fixer
+        run: vendor/bin/php-cs-fixer fix
+
+      - name: phpstan
+        run: vendor/bin/phpstan analyse 
+
+      - name: verifier la version du phpUnit
+        run: php bin/phpunit --version
 
       - name: Create Database
         run: |
