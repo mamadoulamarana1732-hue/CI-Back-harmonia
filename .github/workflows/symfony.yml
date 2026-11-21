@@ -4,35 +4,39 @@ on: [push]
 
 env:
   PHP_VERSION: "8.4"
-  KERNEL_CLASS: ${{secrets.KERNEL_CLASS}}
-  DATABASE_URL: ${{secrets.DATABASE_URL}}
+  APP_ENV: test
+  KERNEL_CLASS: App\Kernel
+  DATABASE_URL: "sqlite:///%kernel.project_dir%/data/database.sqlite"
 
 jobs:
   TestAndLinter:
     runs-on: ubuntu-latest
     steps:
-    # uses: shivammathur/setup-php@v2
-    - uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{env.PHP_VERSION}}
-    - uses: actions/checkout@v7
-    - name: Copy .env.test.local
-      run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v6
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
-    - name: Install Dependencies
-      run: composer install
-    - name: Create Database
-      run: |
-        mkdir -p data
-        touch data/database.sqlite
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
-      env:
-        DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
-      run: vendor/bin/phpunit
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, intl, pdo_sqlite
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install Dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Create Database
+        run: |
+          mkdir -p data
+          touch data/database.sqlite
+          php bin/console doctrine:schema:create --no-interaction
+
+      - name: Execute tests via PHPUnit
+        run: vendor/bin/phpunit
